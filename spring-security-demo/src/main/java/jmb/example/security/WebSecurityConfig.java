@@ -10,34 +10,31 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 
 @Configuration
 @EnableWebSecurity
-public class WebSecurityConfig 
-extends WebSecurityConfigurerAdapter 
-{
-	
-//	@Override
-//	protected void configure(HttpSecurity http) throws Exception {
-//		http
-//			.authorizeRequests()
-//				.antMatchers("/", "/accueil").permitAll()
-//				.anyRequest().authenticated()
-//				.and()
-//			.oauth2Login()
-//				.and()
-//			.logout()
-//				.permitAll();
-//	}
-	
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
 	@Autowired
 	ClientRegistrationRepository clientRegistrationRepository;
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		
-		ClientRegistration googleRegistration = clientRegistrationRepository.findByRegistrationId("google");
-		System.out.println("google.redirectUriTemplate: " + googleRegistration.getRedirectUriTemplate());
+		ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("google");
+		System.out.println("google");
+		System.out.println("- redirectUriTemplate: " + registration.getRedirectUriTemplate());
+		System.out.println("- token-uri: " + registration.getProviderDetails().getTokenUri());
 		
-		http
-			.authorizeRequests()
+		registration = clientRegistrationRepository.findByRegistrationId("github");
+		System.out.println("github");
+		System.out.println("- redirectUriTemplate: " + registration.getRedirectUriTemplate());
+		System.out.println("- token-uri: " + registration.getProviderDetails().getTokenUri());
+		
+		registration = clientRegistrationRepository.findByRegistrationId("keycloak");
+		System.out.println("keycloak");
+		System.out.println("- redirectUriTemplate: " + registration.getRedirectUriTemplate());
+		System.out.println("- token-uri: " + registration.getProviderDetails().getTokenUri());
+		
+		
+		http.authorizeRequests()
 				.antMatchers("/", "/accueil").permitAll()
 				.anyRequest().authenticated()
 				.and()
