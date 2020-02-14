@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -34,15 +35,21 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		System.out.println("- token-uri: " + registration.getProviderDetails().getTokenUri());
 		
 		
-		http.authorizeRequests()
-				.antMatchers("/", "/accueil").permitAll()
+		http
+			.authorizeRequests()
+				.antMatchers("/*", "/resources/**", "/accueil").permitAll()
+				.antMatchers("/secure/").hasRole("USER")
 				.anyRequest().authenticated()
 				.and()
 			.oauth2Login()
 				.redirectionEndpoint().baseUri("/oidcAuth").and()	// doit matcher avec redirectUriTemplate du ClientRegistration
-				// (propriete redirect-uri dans application.properties)			
+												// (propriété redirect-uri dans application.properties)			
+				.loginPage("/login.html")
+				.defaultSuccessUrl("/accueil")
 				.and()
 			.logout()
+				.logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
+				.logoutSuccessUrl("/login.html")
 				.permitAll();
 	}
 	
