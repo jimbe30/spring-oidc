@@ -1,39 +1,55 @@
 package jmb.example.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-	@Autowired
-	ClientRegistrationRepository clientRegistrationRepository;
+	@Bean
+	/**
+	 * Configuration des infos de référencement de l'application auprès des différents fournisseurs d'identité.
+	 * 
+	 * @return
+	 */
+	public ClientRegistrationRepository clientRegistrationRepository() {
+		
+		String redirectUri = "{baseUrl}/oidcAuth";
+		
+		ClientRegistration googleRegistration = CommonOAuth2Provider.GOOGLE.getBuilder("google")
+				.clientId("656590843516-d87roc2opg8u7lpm2mqu71javnhmcqj6.apps.googleusercontent.com")
+				.clientSecret("W3Nw2SgqEX_kIHtGavbKpuYw")
+				.redirectUriTemplate(redirectUri)
+				.build();
+		
+		String keycloakBaseUri = "http://localhost:8080/auth/realms/OIDC-demo/protocol/openid-connect"; 
+		ClientRegistration keycloakRegistration = ClientRegistration.withRegistrationId("keycloak")
+				.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+				.clientId("oidcDemoApp")
+				.clientSecret("f24fa57d-a8bc-4993-8a3d-afddbf3c6903")
+				.redirectUriTemplate(redirectUri)
+				.authorizationUri(keycloakBaseUri + "/auth")
+				.tokenUri(keycloakBaseUri + "/token")
+				.jwkSetUri(keycloakBaseUri + "/certs")
+				.userInfoUri(keycloakBaseUri + "/userinfo")
+				.userNameAttributeName("preferred_username")
+				.build();
+		
+		return new InMemoryClientRegistrationRepository(googleRegistration, keycloakRegistration);
+	}
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		
-		ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("google");
-		System.out.println("google");
-		System.out.println("- redirectUriTemplate: " + registration.getRedirectUriTemplate());
-		System.out.println("- token-uri: " + registration.getProviderDetails().getTokenUri());
-		
-		registration = clientRegistrationRepository.findByRegistrationId("github");
-		System.out.println("github");
-		System.out.println("- redirectUriTemplate: " + registration.getRedirectUriTemplate());
-		System.out.println("- token-uri: " + registration.getProviderDetails().getTokenUri());
-		
-		registration = clientRegistrationRepository.findByRegistrationId("keycloak");
-		System.out.println("keycloak");
-		System.out.println("- redirectUriTemplate: " + registration.getRedirectUriTemplate());
-		System.out.println("- token-uri: " + registration.getProviderDetails().getTokenUri());
-		
 		
 		http
 			.authorizeRequests()
