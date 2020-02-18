@@ -1,5 +1,6 @@
 package jmb.example.security;
 
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -29,18 +30,22 @@ import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-@EnableWebSecurity
-public class WebSecurityConfig {
-	
+import com.nimbusds.jwt.JWTParser;
 
-	@Bean
+@EnableWebSecurity
+public class WebSecurityConfig {	
+
 	/**
 	 * Configuration des infos de référencement de l'application auprès des différents fournisseurs d'identité.
 	 * @return
 	 */
-	public ClientRegistrationRepository clientRegistrationRepository() {
+	@Bean
+	public static ClientRegistrationRepository clientRegistrationRepository() {
 		
 		String redirectUri = "{baseUrl}/oidcAuth";
 		
@@ -65,14 +70,43 @@ public class WebSecurityConfig {
 				.build();
 		
 		return new InMemoryClientRegistrationRepository(googleRegistration, keycloakRegistration);
+	}	
+	
+	/**
+	 * Le JwtDecoder utilisé pour l'authentification par header en mode "Authorization: Bearer" (http.oauth2ResourceServer().jwt())
+	 * tient compte de l'ensemble des fournisseurs d'identité enregistrés pour l'application (ClientRegistrationRepository) 
+	 * @param clientRegistrationRepository
+	 * @return JwtDecoder
+	 */
+	@Bean
+	public static JwtDecoder jwtDecoder(InMemoryClientRegistrationRepository clientRegistrationRepository) {
+		
+		return token -> {
+			try {
+				JwtDecoder decoder = null;
+				String issuer = JWTParser.parse(token).getJWTClaimsSet().getIssuer();
+				for (ClientRegistration registration: clientRegistrationRepository) {
+					if (registration.getProviderDetails().getAuthorizationUri().contains(issuer)) {
+						decoder = NimbusJwtDecoder
+								.withJwkSetUri(registration.getProviderDetails().getJwkSetUri())
+								.build();
+						break;
+					}
+				}				
+				if (decoder == null) {
+					throw new JwtException("Accès interdit: aucune clé connue pour valider le jeton fourni");					
+				}				
+				return decoder.decode(token);				
+			} catch (ParseException pe) {
+				throw new JwtException(pe.getMessage());
+			}
+		};
 	}
 	
 	@Configuration @Order(1)
-	public static class JwtBearerHttpConfig extends WebSecurityConfigurerAdapter {
-		
+	public static class JwtBearerHttpConfig extends WebSecurityConfigurerAdapter {		
 		@Override
-		protected void configure(HttpSecurity http) throws Exception {
-			
+		protected void configure(HttpSecurity http) throws Exception {			
 			http
 				.requestMatcher(
 					request -> request.getHeader("Authorization") != null && request.getHeader("Authorization").startsWith("Bearer ")
@@ -81,8 +115,7 @@ public class WebSecurityConfig {
 					.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 					.and()
 				.oauth2ResourceServer()
-					.jwt()
-						.jwkSetUri("http://localhost:8180/auth/realms/OIDC-demo/protocol/openid-connect/certs")
+					.jwt()	// ici on récupère implicitement le JwtDecoder défini plus haut
 						.and()
 					.and()
 				.authorizeRequests()
@@ -92,17 +125,14 @@ public class WebSecurityConfig {
 				.logout()				
 					.logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
 					.logoutSuccessUrl("/login.html")
-					.permitAll();			
-
-		}
+					.permitAll();
+		}		
 	}
 	
 	@Configuration @Order(5)
-	public static class OidcHttpConfig extends WebSecurityConfigurerAdapter {
-		
+	public static class OidcHttpConfig extends WebSecurityConfigurerAdapter {		
 		@Override
-		protected void configure(HttpSecurity http) throws Exception {
-			
+		protected void configure(HttpSecurity http) throws Exception {			
 			http
 				.authorizeRequests()
 					.antMatchers("/*", "/accueil").permitAll()
@@ -140,7 +170,6 @@ public class WebSecurityConfig {
 	            
 	            user = new DefaultOAuth2User(user.getAuthorities(), attributes, 
 	            		userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName());
-
 	            return user;
 	        };
 		}
@@ -155,21 +184,15 @@ public class WebSecurityConfig {
 	            Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
 	            mappedAuthorities.addAll(oidcUser.getAuthorities());
 	            
-	            if (oidcUser.getAttribute("profile").equals("admin")) {
+	            if ("admin".equals(oidcUser.getAttribute("profile"))) {
 	            	mappedAuthorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-	            }
-	            
+	            }	            
 	            System.out.println(oidcUser.getIdToken().getTokenValue());
 
 	            oidcUser = new DefaultOidcUser(mappedAuthorities, oidcUser.getIdToken(), oidcUser.getUserInfo());
 	            return oidcUser;
 	        };
-	    }
-		
-	}
+	    }		
+	}	
 	
-	
-	
-
-
 }
