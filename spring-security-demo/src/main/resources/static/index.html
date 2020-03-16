@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="">
+<meta name="author" content="">
+<title>Interrogation URL</title>
+<link
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css"
+	rel="stylesheet">
+<link
+	href="https://getbootstrap.com/docs/4.0/examples/signin/signin.css"
+	rel="stylesheet">
+
+<script src="https://unpkg.com/axios/dist/axios.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.1/qs.js"></script>
+
+<script type="text/javascript">
+
+	var resp;
+	var form;
+	var access_token;
+	
+	window.onload = function() {
+		form = document.forms[0];
+		access_token = getCookie("Access_Token");
+		if (access_token) {
+			console.log("Access_Token:" + access_token);
+		}
+	}
+	
+	function getCookie(cname) {
+		 var name = cname + "=";
+		  var decodedCookie = decodeURIComponent(document.cookie);
+		  var ca = decodedCookie.split(';');
+		  for(var i = 0; i <ca.length; i++) {
+		    var c = ca[i];
+		    while (c.charAt(0) == ' ') {
+		      c = c.substring(1);
+		    }
+		    if (c.indexOf(name) == 0) {
+		      return c.substring(name.length, c.length);
+		    }
+		  }
+		  return "";
+	}
+	
+
+	function sendRequest() {
+		
+		var requestConfig = {
+			url: form['url'].value,
+			method: form['method'].value,				
+		}		
+		var params = getParams();
+		var headers = getHeaders();
+		if (access_token) {
+			if (headers) {
+				headers['Authorization'] = "Bearer " + access_token;
+			} else {
+				headers = { Authorization: "Bearer " + access_token };
+			}
+		}
+		if (headers) {
+			requestConfig.headers = headers;
+		}
+		if (params) {
+			if(requestConfig.method === 'GET') {
+				requestConfig.params = params; 				 
+			} else {
+				requestConfig.params = params;
+				requestConfig.data = params;
+			}
+		}			
+		
+		request(requestConfig);
+	}
+	
+	function request(config) {
+		axios(config)
+		.then(function (response) {
+			processResponse(response);				
+		})
+		.catch(function(error) {
+			if (error.response) {
+				var response = error.response;
+				processResponse(response);
+				// En cas d'erreur 401 avec présence d'un jeton dans l'entête (Authorization: Bearer), 
+				// ça signifie que le jeton n'est pas valide et qu'il faut s'authentifier à nouveau.
+				// On relance la requête sans jeton d'authentification pour être redirigé vers la mire de connexion
+				if (response.status == "401" && config.headers['Authorization']) {
+					access_token = null;
+					var { Authorization, ...headers } = config.headers;
+					config.headers = headers;					
+					request(config);				
+				}
+			} else if (error.request) {
+				console.log("Erreur réseau - communication impossible avec le serveur \n"
+					+ "-> Vérifiez que l'adresse demandée soit accessible: " + config.url);
+			}
+		});
+	}
+	
+	function processResponse(response) {
+		var status =  "Status: " + response.status + " - " + response.statusText;
+		console.log(status);		
+		var responseHeader = "<h5>" + status + "</h5>";
+		
+		console.log("headers:\n");
+		var headers = response.headers;
+		var responseHeader = "<h5>Status: " + response.status + " - " + response.statusText + "</h5>";
+		for (headerName in headers) {
+			var header = headerName + ": " + headers[headerName];
+			console.log("\t" + header + "\n");
+			responseHeader += header + "<br>";
+		}
+		document.querySelector("#responseHeader").innerHTML = responseHeader;
+		console.log("BODY:\n");
+		var responseData = response.data;
+		if (responseData instanceof Object) {
+			responseData = JSON.stringify(responseData);
+		}
+		console.log(responseData);
+		document.querySelector("#responseData").innerHTML = responseData;
+	}
+	
+	function getData(type) {		
+		var data = {};
+		for(var i=1; i<6; i++) {
+			var key = form[type + 'Name' + i];
+			var value = form[type + 'Value' + i];
+			if (key && value && value.value.length>0) {
+				data[key.value] = value.value;
+			}
+		}
+		return Object.keys(data).length > 0 ? data : null;
+	}
+	
+	function getHeaders() {		
+		return getData('header');
+	}
+	
+	function getParams() {		
+		return getData('param');
+	}
+</script>
+
+</head>
+
+<body>
+
+	<div class="container" style="width: 50%;">
+		<h5>Interrogation d'URL</h5>
+
+		<form id="form-url">
+
+			<div class="form-group">
+				<label for="url" class="control-label">URL</label> <input
+					tabindex="1" id="url" name="url" style="width: 100%" value=""
+					type="text" autofocus>
+			</div>
+
+			<div class="form-group">
+				<label for="method" class="control-label">Method</label> <select
+					tabindex="2" id="method" style="width: 100%" name="method">
+					<option value="GET" selected>GET</option>
+					<option value="POST">POST</option>
+				</select>
+			</div>
+
+			<div class="form-group">
+				<label class="control-label">Headers</label>
+				<div>
+					<input placeholder="header name" tabindex="3" style="width: 30%"
+						name="headerName1" type="text"> <input
+						placeholder="header value" tabindex="4" style="width: 65%"
+						name="headerValue1" type="text">
+				</div>
+				<div>
+					<input tabindex="5" style="width: 30%" name="headerName2"
+						type="text"> <input tabindex="6" style="width: 65%"
+						name="headerValue2" type="text">
+				</div>
+				<div>
+					<input tabindex="7" style="width: 30%" name="headerName3"
+						type="text"> <input tabindex="8" style="width: 65%"
+						name="headerValue3" type="text">
+				</div>
+				<div>
+					<input tabindex="9" style="width: 30%" name="headerName4"
+						type="text"> <input tabindex="10" style="width: 65%"
+						name="headerValue4" type="text">
+				</div>
+				<div>
+					<input tabindex="11" style="width: 30%" name="headerName5"
+						type="text"> <input tabindex="12" style="width: 65%"
+						name="headerValue5" type="text">
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label class="control-label">Params</label>
+				<div>
+					<input placeholder="param name" tabindex="23" style="width: 30%"
+						name="paramName1" type="text"> <input
+						placeholder="param value" tabindex="24" style="width: 65%"
+						name="paramValue1" type="text">
+				</div>
+				<div>
+					<input tabindex="25" style="width: 30%" name="paramName2"
+						type="text"> <input tabindex="26" style="width: 65%"
+						name="paramValue2" type="text">
+				</div>
+				<div>
+					<input tabindex="27" style="width: 30%" name="paramName3"
+						type="text"> <input tabindex="28" style="width: 65%"
+						name="paramValue3" type="text">
+				</div>
+				<div>
+					<input tabindex="29" style="width: 30%" name="paramName4"
+						type="text"> <input tabindex="30" style="width: 65%"
+						name="paramValue4" type="text">
+				</div>
+				<div>
+					<input tabindex="31" style="width: 30%" name="paramName5"
+						type="text"> <input tabindex="32" style="width: 65%"
+						name="paramValue5" type="text">
+				</div>
+			</div>
+
+			<div>
+				<input tabindex="40" class="btn btn-primary btn-block btn-lg"
+					name="goToUrl" id="goToUrl" type="button" onclick="sendRequest();"
+					value="Aller">
+			</div>
+		</form>
+
+	</div>
+	<p></p>
+
+	<div class="container" style="width: 50%;">
+		<h5>Réponse</h5>
+		<hr>
+		<div id="responseData" style="width: 100%;"></div>
+		<hr>
+		<h5>Entêtes</h5>
+		<div id="responseHeader" style="width: 100%;"></div>
+
+
+	</div>
+
+</body>
+</html>

@@ -10,26 +10,21 @@
 <link
 	href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css"
 	rel="stylesheet"
-	integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M"
-	crossorigin="anonymous">
+>
 <link
-	href="https://getbootstrap.com/docs/4.0/examples/signin/signin.css"
-	rel="stylesheet" crossorigin="anonymous" />
+	href="https://getbootstrap.com/docs/4.0/examples/signin/signin.css"/>
 </head>
 <body>
 	<div class="container">
-		<h2 class="form-signin-heading"> Connexion sÃ©curisÃ©e </h2>
+		<h2 class="form-signin-heading"> Connexion sécurisée </h2>
 		<h5>Choisissez un serveur d'authentification OpenID Connect</h5>
 
 		<table class="table table-striped">
 			<tr>
-				<td><a href="/oauth2/authorization/github">GitHub</a></td>
-			</tr>
-			<tr>
 				<td><a href="/oauth2/authorization/google">Google</a></td>
 			</tr>
 			<tr>
-				<td><a href="/oauth2/authorization/keycloak">Keycloak</a></td>
+				<td><a href="/oauth2/authorization/keycloak?${redirect_to}">Keycloak</a></td>
 			</tr>
 		</table>
 

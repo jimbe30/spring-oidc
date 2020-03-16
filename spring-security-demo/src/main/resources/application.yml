@@ -1,0 +1,19 @@
+#login:
+# level:
+#  org:
+#   springframework:
+#    security: DEBUG
+#    oauth2: DEBUG
+
+net:
+  jmb:
+    oidc-app:
+      base-path: http://localhost:6969
+      keycloak:
+        infos: serveur interne délégué à l'authentification des clients   
+
+spring:
+  mvc:
+    view:
+      prefix: /WEB-INF/jsp/
+      suffix: .jsp

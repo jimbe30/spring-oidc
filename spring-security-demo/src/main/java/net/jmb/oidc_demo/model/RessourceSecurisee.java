@@ -1,11 +1,11 @@
-package jmb.example.beans;
+package net.jmb.oidc_demo.model;
 
-public class RessourceSecuriseeBean {
+public class RessourceSecurisee {
 	
 	private final long id;
 	private final String content;
 
-	public RessourceSecuriseeBean(long id, String content) {
+	public RessourceSecurisee(long id, String content) {
 		this.id = id;
 		this.content = content;
 	}
