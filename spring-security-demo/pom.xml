@@ -9,21 +9,16 @@
 		<version>2.2.4.RELEASE</version>
 	</parent>
 
-	<groupId>net.jmb.oidc_demo</groupId>
-	<artifactId>spring-security-demo</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>spring-oidc-demo</name>
-	<description>Demo project for Spring Boot</description>
+	<groupId>net.jmb.security</groupId>
+	<artifactId>spring-oidc</artifactId>
+	<version>1.0.0</version>
+	<name>spring-oidc-security</name>
 
 	<properties>
 		<java.version>1.8</java.version>
 	</properties>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-hateoas</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-client</artifactId>
@@ -57,7 +52,6 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-oauth2-resource-server</artifactId>
 		</dependency>
-
 
 	</dependencies>
 

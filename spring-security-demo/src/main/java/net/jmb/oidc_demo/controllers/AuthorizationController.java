@@ -2,20 +2,17 @@ package net.jmb.oidc_demo.controllers;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,39 +20,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
-import net.jmb.oidc_demo.security.WebSecurityConfig;
+import net.jmb.oidc_demo.model.IdentityProviderRegistration;
 
 @Controller
-public class AuthController {
-
-	InMemoryClientRegistrationRepository clientRegistrationRepository;
-	Map<String, Map<String, String>> loginInfos;
+@CrossOrigin
+public class AuthorizationController {
 	
 	@Autowired
-	AuthController(
-		ClientRegistrationRepository clientRegistrationRepository,
-		@Value("${net.jmb.oidc-app.base-path}")	String basePath) {
-		
-			this.clientRegistrationRepository = (InMemoryClientRegistrationRepository) clientRegistrationRepository;
-			loginInfos = new ConcurrentHashMap<>();
-			
-			this.clientRegistrationRepository.forEach(
-				registration -> {
-					String idProvider = registration.getRegistrationId();
-					String authURL = basePath + WebSecurityConfig.AUTHORIZATION_BASE_URI + registration.getRegistrationId();
-					String authDescription = (String) registration.getProviderDetails().getConfigurationMetadata().get(WebSecurityConfig.IDP_INFO_KEY);
-					Map<String, String> authInfos = new HashMap<>();
-					authInfos.put("URL", authURL);
-					authInfos.put("description", authDescription);
-					loginInfos.put(idProvider, authInfos);				
-				}
-			);
-	}
-	
-	@GetMapping("/login/infos")
+	Map<String, IdentityProviderRegistration> idpRegistrations;
+
+	@GetMapping("/login/discovery")
 	@ResponseBody
-	public Map<String, Map<String, String>> loginInfos() {
-		return loginInfos;
+	public Map<String, IdentityProviderRegistration> loginInfos() {
+		return idpRegistrations;
 	}
 
 	@RequestMapping("/login")
@@ -73,6 +50,12 @@ public class AuthController {
 		return new ModelAndView("loginPage", body);
 	}
 	
+	@RequestMapping("/login/{idp}")
+	public void loginIdp(@PathVariable String idp, 
+			@RequestParam("redirect_to") String redirectTo) {
+		
+	}
+	
 	@RequestMapping("/error_401")
 	public ResponseEntity<Object> erreur401() {				
 		return erreur401(null);
@@ -85,10 +68,9 @@ public class AuthController {
 		
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.set("login-urls",
-			loginInfos.values().stream()
-				.map(
-					map -> {
-						return map.get("URL");
+				idpRegistrations.values().stream().map(
+					idpRegistration -> {
+						return idpRegistration.getAuthorizationURL();
 					}
 				)
 				.collect(Collectors.toList())
@@ -101,7 +83,7 @@ public class AuthController {
 		}
 		
 		Map<String, Object> body = new HashMap<String, Object>();
-		body.put("loginInfos", loginInfos);
+		body.put("loginInfos", idpRegistrations);
 		body.put("redirectParameter", redirectParameter);
 		
 		return new ResponseEntity<Object>(body, responseHeaders, HttpStatus.UNAUTHORIZED);

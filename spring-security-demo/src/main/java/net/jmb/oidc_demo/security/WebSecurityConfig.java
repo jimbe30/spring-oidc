@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -48,6 +47,8 @@ import org.springframework.util.StringUtils;
 
 import com.nimbusds.jwt.JWTParser;
 
+import net.jmb.oidc_demo.model.IdentityProviderRegistration;
+
 @EnableWebSecurity
 public class WebSecurityConfig {
 	
@@ -72,7 +73,6 @@ public class WebSecurityConfig {
 			.clientId("656590843516-d87roc2opg8u7lpm2mqu71javnhmcqj6.apps.googleusercontent.com")
 			.clientSecret("W3Nw2SgqEX_kIHtGavbKpuYw")
 			.build();
-
 		
 		String keycloakBaseUri = "http://localhost:8180/auth/realms/OIDC-demo/protocol/openid-connect";
 		Map<String, Object> keycloakData = new HashMap<>();
@@ -97,6 +97,38 @@ public class WebSecurityConfig {
 		);
 		
 		return clientRegistrationRepository;
+	}
+	
+	@Bean
+	public Map<String, IdentityProviderRegistration> idpRegistrations (
+			ClientRegistrationRepository clientRegistrationRepository,
+			@Value("${net.jmb.oidc-app.base-path}")	String basePath) {
+		
+		Map<String, IdentityProviderRegistration> result = new HashMap<>();
+		
+		((InMemoryClientRegistrationRepository) clientRegistrationRepository).forEach(
+				
+			registration -> {
+				
+				String registrationId = registration.getRegistrationId();
+				String clientId = registration.getClientId();
+				String authURL = basePath + WebSecurityConfig.AUTHORIZATION_BASE_URI + registration.getRegistrationId();
+				String description = (String) registration.getProviderDetails().getConfigurationMetadata().get(WebSecurityConfig.IDP_INFO_KEY);
+				String issuerURL = registration.getProviderDetails().getAuthorizationUri();
+			
+				IdentityProviderRegistration idpRegistration = 	
+					new IdentityProviderRegistration()
+						.setAuthorizationURL(authURL)
+						.setClientId(clientId)
+						.setDescription(description)
+						.setIssuerURL(issuerURL)
+						.setRegistrationId(registrationId);
+				
+				result.put(registrationId, idpRegistration);
+			}
+		);
+		
+		return result;
 	}
 	
 	/**
@@ -243,8 +275,8 @@ public class WebSecurityConfig {
 				protected String determineTargetUrl(HttpServletRequest request,	HttpServletResponse response, Authentication authentication) {
 					String targetUrl = super.determineTargetUrl(request, response);
 					String targetUrlParameter = getTargetUrlParameter();	
+					HttpSession session = request.getSession();
 					if (targetUrlParameter != null) {						
-						HttpSession session = request.getSession();						
 						@SuppressWarnings("unchecked")
 						Map<String, String[]> parameters = (Map<String, String[]>) session.getAttribute(
 								AuthorizationRequestResolverWithParameters.SAVED_PARAMETERS_ATTR_NAME);
@@ -257,10 +289,10 @@ public class WebSecurityConfig {
 					if (authentication.getPrincipal() instanceof OidcUser) {
 						OidcUser user = (OidcUser) authentication.getPrincipal();
 						String jwt = user.getIdToken().getTokenValue();	
-						Cookie cookie = new Cookie("Access_Token", jwt);
-						cookie.setMaxAge(60);
-						response.addCookie(cookie);						
+						response.addHeader("Authorization", "Bearer " + jwt);
+						targetUrl += "?access_token=" + jwt;
 					}
+					session.invalidate();
 					return targetUrl;
 				}
 			}
