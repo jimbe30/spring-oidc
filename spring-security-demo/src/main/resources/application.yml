@@ -1,19 +1,56 @@
-#login:
-# level:
-#  org:
-#   springframework:
-#    security: DEBUG
-#    oauth2: DEBUG
+### infos variables
 
-net:
-  jmb:
-    oidc-app:
-      base-path: http://localhost:6969
-      keycloak:
-        infos: serveur interne délégué à l'authentification des clients   
+keycloak:
+  info: serveur interne délégué à l'authentification des clients 
+  realm: OIDC-demo
+  baseUrl: http://localhost:8180/auth/realms/${keycloak.realm}/protocol/openid-connect
+  clientId: oidcDemoApp
+  clientSecret: f24fa57d-a8bc-4993-8a3d-afddbf3c6903
+  
+google:
+  info: fournisseur d'identité google pour le test 
+  clientId: 656590843516-d87roc2opg8u7lpm2mqu71javnhmcqj6.apps.googleusercontent.com
+  clientSecret: W3Nw2SgqEX_kIHtGavbKpuYw
+ 
+---
+### config vues jsp 
 
 spring:
   mvc:
     view:
       prefix: /WEB-INF/jsp/
       suffix: .jsp
+      
+---
+### fournisseurs OIDC
+
+spring:     
+  security:
+    oauth2:
+      client:
+        registration:        
+          keycloak:
+            client-name: ${keycloak.info}
+            authorization-grant-type: authorization_code
+            scope: profile, email, openid
+            client-id: ${keycloak.clientId}
+            client-secret: ${keycloak.clientSecret}
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          keycloak:
+            authorization-uri: ${keycloak.baseUrl}/auth
+            token-uri: ${keycloak.baseUrl}/token
+            jwk-set-uri: ${keycloak.baseUrl}/certs
+            user-info-uri: ${keycloak.baseUrl}/userinfo
+            user-name-attribute: preferred_username
+---
+spring:     
+  security:
+    oauth2:
+      client:
+        registration:                
+          google:
+            client-name: ${google.info}
+            client-id: ${google.clientId}
+            client-secret: ${google.clientSecret}
+

@@ -70,7 +70,7 @@ public class AuthorizationController {
 		responseHeaders.set("login-urls",
 				idpRegistrations.values().stream().map(
 					idpRegistration -> {
-						return idpRegistration.getAuthorizationURL();
+						return idpRegistration.getAuthorizationPath();
 					}
 				)
 				.collect(Collectors.toList())

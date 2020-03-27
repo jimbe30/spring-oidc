@@ -5,7 +5,7 @@ public class IdentityProviderRegistration {
 	String registrationId;
 	String clientId;
 	String description;
-	String authorizationURL;
+	String authorizationPath;
 	String issuerURL;
 	
 	public String getRegistrationId() {
@@ -29,11 +29,11 @@ public class IdentityProviderRegistration {
 		this.description = idpDescription;
 		return this;
 	}
-	public String getAuthorizationURL() {
-		return authorizationURL;
+	public String getAuthorizationPath() {
+		return authorizationPath;
 	}
-	public IdentityProviderRegistration setAuthorizationURL(String authorizationURL) {
-		this.authorizationURL = authorizationURL;
+	public IdentityProviderRegistration setAuthorizationPath(String authorizationURL) {
+		this.authorizationPath = authorizationURL;
 		return this;
 	}
 	public String getIssuerURL() {

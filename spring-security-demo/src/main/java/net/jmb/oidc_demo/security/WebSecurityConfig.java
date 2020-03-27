@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -18,7 +18,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -31,8 +30,6 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -52,57 +49,13 @@ import net.jmb.oidc_demo.model.IdentityProviderRegistration;
 @EnableWebSecurity
 public class WebSecurityConfig {
 	
-	public static final String IDP_INFO_KEY = "IdentityProviderInfo";
-	
-	private static ClientRegistrationRepository clientRegistrationRepository;
-	
-	public static final String REDIRECT_URI_TEMPLATE = "{baseUrl}/login/oauth2/code/{registrationId}";
-	public static final String REDIRECT_CODE_BASE_URI = OAuth2LoginAuthenticationFilter.DEFAULT_FILTER_PROCESSES_URI;
 	public static final String AUTHORIZATION_BASE_URI = OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI + "/";
 
-	/**
-	 * Répertorie les infos de référencement de l'application auprès des différents 
-	 * fournisseurs d'identité.
-	 * @return
-	 */
-	@Bean
-	public static ClientRegistrationRepository clientRegistrationRepository(
-			@Value("${net.jmb.oidc-app.keycloak.infos}") String keycloakInfos) {
-		
-		ClientRegistration googleRegistration = CommonOAuth2Provider.GOOGLE.getBuilder("google")
-			.clientId("656590843516-d87roc2opg8u7lpm2mqu71javnhmcqj6.apps.googleusercontent.com")
-			.clientSecret("W3Nw2SgqEX_kIHtGavbKpuYw")
-			.build();
-		
-		String keycloakBaseUri = "http://localhost:8180/auth/realms/OIDC-demo/protocol/openid-connect";
-		Map<String, Object> keycloakData = new HashMap<>();
-		keycloakData.put(IDP_INFO_KEY, keycloakInfos);
-		
-		ClientRegistration keycloakRegistration = ClientRegistration.withRegistrationId("keycloak")
-			.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-			.scope("profile", "email", "openid")
-			.clientId("oidcDemoApp")
-			.clientSecret("f24fa57d-a8bc-4993-8a3d-afddbf3c6903")
-			.redirectUriTemplate(REDIRECT_URI_TEMPLATE)
-			.authorizationUri(keycloakBaseUri + "/auth")
-			.tokenUri(keycloakBaseUri + "/token")
-			.jwkSetUri(keycloakBaseUri + "/certs")
-			.userInfoUri(keycloakBaseUri + "/userinfo")
-			.userNameAttributeName("preferred_username")
-			.providerConfigurationMetadata(keycloakData)
-			.build();
-
-		clientRegistrationRepository =  new InMemoryClientRegistrationRepository(
-				googleRegistration, keycloakRegistration
-		);
-		
-		return clientRegistrationRepository;
-	}
+	@Autowired
+	private ClientRegistrationRepository clientRegistrationRepository;
 	
 	@Bean
-	public Map<String, IdentityProviderRegistration> idpRegistrations (
-			ClientRegistrationRepository clientRegistrationRepository,
-			@Value("${net.jmb.oidc-app.base-path}")	String basePath) {
+	public Map<String, IdentityProviderRegistration> idpRegistrations () {
 		
 		Map<String, IdentityProviderRegistration> result = new HashMap<>();
 		
@@ -112,13 +65,13 @@ public class WebSecurityConfig {
 				
 				String registrationId = registration.getRegistrationId();
 				String clientId = registration.getClientId();
-				String authURL = basePath + WebSecurityConfig.AUTHORIZATION_BASE_URI + registration.getRegistrationId();
-				String description = (String) registration.getProviderDetails().getConfigurationMetadata().get(WebSecurityConfig.IDP_INFO_KEY);
+				String authPath = AUTHORIZATION_BASE_URI + registration.getRegistrationId();
+				String description = (String) registration.getClientName();
 				String issuerURL = registration.getProviderDetails().getAuthorizationUri();
 			
 				IdentityProviderRegistration idpRegistration = 	
 					new IdentityProviderRegistration()
-						.setAuthorizationURL(authURL)
+						.setAuthorizationPath(authPath)
 						.setClientId(clientId)
 						.setDescription(description)
 						.setIssuerURL(issuerURL)
@@ -139,7 +92,7 @@ public class WebSecurityConfig {
 	 */
 	@Configuration
 	@Order(1)
-	public static class JwtBearerHttpConfig extends WebSecurityConfigurerAdapter {
+	public class JwtBearerHttpConfig extends WebSecurityConfigurerAdapter {
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
 			http
@@ -169,7 +122,7 @@ public class WebSecurityConfig {
 		 * @return JwtDecoder
 		 */
 		@Bean
-		public static JwtDecoder jwtDecoder(InMemoryClientRegistrationRepository clientRegistrationRepository) {
+		public JwtDecoder jwtDecoder(InMemoryClientRegistrationRepository clientRegistrationRepository) {
 
 			return token -> {
 				try {
@@ -201,7 +154,7 @@ public class WebSecurityConfig {
 	 */
 	@Configuration
 	@Order(5)
-	public static class OidcHttpConfig extends WebSecurityConfigurerAdapter {
+	public class OidcHttpConfig extends WebSecurityConfigurerAdapter {
 		
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
@@ -214,9 +167,6 @@ public class WebSecurityConfig {
 					.sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy())
 					.and()
 				.oauth2Login()
-					.redirectionEndpoint()
-						.baseUri(REDIRECT_CODE_BASE_URI)
-						.and()
 					.authorizationEndpoint()
 						.authorizationRequestResolver(
 							new AuthorizationRequestResolverWithParameters(clientRegistrationRepository))
