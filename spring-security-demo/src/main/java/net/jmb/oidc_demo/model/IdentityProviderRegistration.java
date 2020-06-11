@@ -1,12 +1,19 @@
 package net.jmb.oidc_demo.model;
 
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class IdentityProviderRegistration {
 	
 	String registrationId;
 	String clientId;
 	String description;
 	String authorizationPath;
-	String issuerURL;
+	String authorizationURL;
+	String issuer;
+	@JsonIgnore
+	JwtDecoder jwtDecoder; 
 	
 	public String getRegistrationId() {
 		return registrationId;
@@ -36,13 +43,28 @@ public class IdentityProviderRegistration {
 		this.authorizationPath = authorizationURL;
 		return this;
 	}
-	public String getIssuerURL() {
-		return issuerURL;
+	public String getIssuer() {
+		return issuer;
 	}
-	public IdentityProviderRegistration setIssuerURL(String issuerURL) {
-		this.issuerURL = issuerURL;
+	public IdentityProviderRegistration setIssuer(String issuer) {
+		this.issuer = issuer;
 		return this;
 	}
+	public String getAuthorizationURL() {
+		return authorizationURL;
+	}
+	public IdentityProviderRegistration setAuthorizationURL(String authorizationURL) {
+		this.authorizationURL = authorizationURL;
+		return this;
+	}
+	public JwtDecoder getJwtDecoder() {
+		return jwtDecoder;
+	}
+	public void setJwtDecoder(JwtDecoder jwtDecoder) {
+		this.jwtDecoder = jwtDecoder;
+	}
+	
+	
 	
 
 	
