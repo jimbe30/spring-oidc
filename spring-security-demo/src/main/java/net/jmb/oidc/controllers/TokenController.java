@@ -1,4 +1,4 @@
-package net.jmb.oidc_demo.controllers;
+package net.jmb.oidc.controllers;
 
 import java.io.IOException;
 import java.net.URI;
@@ -32,8 +32,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
 
-import net.jmb.oidc_demo.security.WebSecurityConfig;
-import net.jmb.oidc_demo.security.WebSecurityConfig.OidcHttpConfig.AuthorizationRequestResolverWithParameters;
+import net.jmb.oidc.security.WebSecurityConfig;
+import net.jmb.oidc.security.WebSecurityConfig.OidcHttpConfig.AuthorizationRequestResolverWithParameters;
 import springfox.documentation.annotations.ApiIgnore;
 
 @Controller

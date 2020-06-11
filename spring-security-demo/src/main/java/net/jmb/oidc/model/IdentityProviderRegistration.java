@@ -1,4 +1,4 @@
-package net.jmb.oidc_demo.model;
+package net.jmb.oidc.model;
 
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 

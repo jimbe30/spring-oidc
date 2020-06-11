@@ -1,4 +1,4 @@
-package net.jmb.oidc_demo.controllers;
+package net.jmb.oidc.controllers;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -26,8 +26,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
-import net.jmb.oidc_demo.model.IdentityProviderRegistration;
-import net.jmb.oidc_demo.security.WebSecurityConfig;
+import net.jmb.oidc.model.IdentityProviderRegistration;
+import net.jmb.oidc.security.WebSecurityConfig;
 import springfox.documentation.annotations.ApiIgnore;
 
 @Controller

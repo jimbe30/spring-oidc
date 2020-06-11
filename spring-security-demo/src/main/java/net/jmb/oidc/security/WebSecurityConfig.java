@@ -1,4 +1,4 @@
-package net.jmb.oidc_demo.security;
+package net.jmb.oidc.security;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -45,7 +45,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import com.nimbusds.jose.util.ArrayUtils;
 import com.nimbusds.jwt.JWTParser;
 
-import net.jmb.oidc_demo.model.IdentityProviderRegistration;
+import net.jmb.oidc.model.IdentityProviderRegistration;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @EnableWebSecurity

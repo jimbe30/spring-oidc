@@ -1,4 +1,4 @@
-package net.jmb.oidc_demo;
+package net.jmb.oidc;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
