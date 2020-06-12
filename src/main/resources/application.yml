@@ -1,7 +1,6 @@
 ### infos variables
 server:
-  port: 6969
-  servlet:
+  port: 8090
 #    context-path: /oidcAuth
 
 ### infos IDP

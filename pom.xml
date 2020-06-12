@@ -67,11 +67,15 @@
 	</dependencies>
 
 	<build>
+		<finalName>spring-oidc</finalName>
 
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<classifier>service</classifier>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
