@@ -82,17 +82,19 @@ public class WebSecurityConfig {
 				String authPath = AUTHORIZATION_BASE_URI + registration.getRegistrationId();
 				String description = (String) registration.getClientName();
 				String authorizationURL = registration.getProviderDetails().getAuthorizationUri();
-			
+				String iconUrl = env.getProperty(registrationId + ".iconUrl");
+				
 				IdentityProviderRegistration idpRegistration = 	
 					new IdentityProviderRegistration()
 						.setAuthorizationPath(authPath)
 						.setClientId(clientId)
 						.setDescription(description)
 						.setAuthorizationURL(authorizationURL)
-						.setRegistrationId(registrationId);
+						.setRegistrationId(registrationId)
+						.setIconUrl(iconUrl);
 				
 				String issuer = env.getProperty(registrationId + ".issuer");
-				if (issuer == null) {					
+				if (issuer == null) {
 					try {
 						URI uri = new URI(authorizationURL);
 						issuer = uri.getHost();
@@ -100,7 +102,8 @@ public class WebSecurityConfig {
 						e.printStackTrace();
 					}	
 				}
-				idpRegistration.setIssuer(issuer);				
+				idpRegistration.setIssuer(issuer);
+				
 				result.put(registrationId, idpRegistration);
 			}
 		);
@@ -213,7 +216,7 @@ public class WebSecurityConfig {
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
 			http
-				.authorizeRequests()
+				.authorizeRequests()					
 					.antMatchers(permitAllRequestMatcher).permitAll()
 					.anyRequest().authenticated()
 					.and()

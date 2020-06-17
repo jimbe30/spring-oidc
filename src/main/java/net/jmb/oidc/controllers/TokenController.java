@@ -1,10 +1,8 @@
 package net.jmb.oidc.controllers;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -13,7 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,21 +20,18 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.JWTParser;
 
 import net.jmb.oidc.security.WebSecurityConfig;
 import net.jmb.oidc.security.WebSecurityConfig.OidcHttpConfig.AuthorizationRequestResolverWithParameters;
 import springfox.documentation.annotations.ApiIgnore;
 
 @Controller
-@RequestMapping("token")
+@RequestMapping("/token")
 public class TokenController {
 
 	@Autowired
@@ -48,11 +42,9 @@ public class TokenController {
 	@RequestMapping("/ok")
 	@ResponseBody
 	@ApiIgnore
-	public ResponseEntity<Object> tokenResult(
+	public void tokenResult(
 			@AuthenticationPrincipal OidcUser principal, 
-			HttpServletRequest request,	HttpServletResponse response, 
-			@RequestParam(value = "id_token", required = false) String idToken,
-			@RequestHeader(value = "Authorization", required = false) String bearerToken
+			HttpServletRequest request, HttpServletResponse response
 
 	) throws ServletException, IOException, URISyntaxException {
 
@@ -61,18 +53,13 @@ public class TokenController {
 			token = principal.getIdToken().getTokenValue();
 		}
 		
-		ResponseEntity<Object> responseEntity = null;
-		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(token);
-
+		HttpSession session = request.getSession();
+		StringBuffer queryParams = new StringBuffer();
+		@SuppressWarnings("unchecked")
+		Map<String, String[]> parameters = (Map<String, String[]>) session
+				.getAttribute(AuthorizationRequestResolverWithParameters.SAVED_PARAMETERS_ATTR_NAME);
+		
 		try {
-			HttpSession session = request.getSession();
-
-			StringBuffer queryParams = new StringBuffer();
-			@SuppressWarnings("unchecked")
-			Map<String, String[]> parameters = (Map<String, String[]>) session
-					.getAttribute(AuthorizationRequestResolverWithParameters.SAVED_PARAMETERS_ATTR_NAME);
-
 			if (parameters != null) {
 				final StringBuffer tmpTargetUrl = new StringBuffer();
 				parameters.forEach((paramKey, paramValues) -> {
@@ -92,30 +79,18 @@ public class TokenController {
 
 				if (tmpTargetUrl.length() > 0) {
 					String targetUrl = tmpTargetUrl.append(queryParams).toString();
-					URI location = new URI(targetUrl);
-					headers.setLocation(location);
-					responseEntity = new ResponseEntity<Object>(null, headers, HttpStatus.FOUND);
+					response.sendRedirect(targetUrl);
 				}
 			}
-			
-			if (responseEntity == null) {
-				JWTClaimsSet jwtClaimsSet = JWTParser.parse(token).getJWTClaimsSet();
-				Map<String, Object> body = new HashMap<String, Object>();
-				body.put("tokenValue", token);
-				body.put("claims", jwtClaimsSet.getClaims());
-				responseEntity = new ResponseEntity<Object>(body, HttpStatus.OK);
-			}
-			session.invalidate();
-			return responseEntity;
 
 		} catch (Exception e) {
-			responseEntity = new ResponseEntity<Object>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+			response.sendError(401, e.getMessage());
+		} finally {
+			session.invalidate();
 		}
-		
-		return responseEntity;
 	}
 	
-	@PostMapping("/validate")
+	@RequestMapping(value = "/validate", method = {RequestMethod.GET})
 	@ResponseBody
 	public ResponseEntity<Object> validateToken(
 			HttpServletRequest request,	HttpServletResponse response, 

@@ -11,6 +11,7 @@ public class IdentityProviderRegistration {
 	String description;
 	String authorizationPath;
 	String authorizationURL;
+	String iconUrl;
 	String issuer;
 	@JsonIgnore
 	JwtDecoder jwtDecoder; 
@@ -60,10 +61,17 @@ public class IdentityProviderRegistration {
 	public JwtDecoder getJwtDecoder() {
 		return jwtDecoder;
 	}
-	public void setJwtDecoder(JwtDecoder jwtDecoder) {
+	public IdentityProviderRegistration setJwtDecoder(JwtDecoder jwtDecoder) {
 		this.jwtDecoder = jwtDecoder;
+		return this;		
 	}
-	
+	public String getIconUrl() {
+		return iconUrl;
+	}
+	public IdentityProviderRegistration setIconUrl(String iconUrl) {
+		this.iconUrl = iconUrl;
+		return this;		
+	}	
 	
 	
 

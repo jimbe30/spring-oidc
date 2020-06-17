@@ -65,7 +65,7 @@ public class AuthorizationController {
 	}
 	
 	// http://localhost:6969/login/keycloak?redirect_to=http://localhost:6969/accueil
-	@RequestMapping(path = "/login/{idp}", method = {RequestMethod.GET, RequestMethod.POST})
+	@RequestMapping(path = "/login/{idp}", method = {RequestMethod.GET})
 	public void loginIdp(
 			HttpServletResponse response, 
 			HttpServletRequest request,	
