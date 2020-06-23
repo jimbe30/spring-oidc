@@ -1,9 +1,10 @@
 
 ### infos IDP
 
-# redirection https://spring-oidc-service.herokuapp.com/login/oauth2/code/azure
-  
+redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+
 azure:
+# redirection https://spring-oidc-service.herokuapp.com/login/oauth2/code/azure
   info: Serveur cloud Microsoft Azure AD pour l'authentification des utilisateurs internes à l'organisation
   baseURL: https://login.microsoftonline.com/7efe32b1-bb0f-4849-ae3a-68ee0d8fcf63
   clientId: 5ca4f013-07bd-49a6-bb88-1e3064db1fa1
@@ -12,6 +13,7 @@ azure:
   iconUrl: https://icons-for-free.com/iconfiles/png/512/logo+microsoft+microsoft+logo+technology+windows+icon-1320167831167856453.png
   
 google:
+# redirection https://spring-oidc-service.herokuapp.com/login/oauth2/code/google
   info: Fournisseur d'identité Google pour le test 
   clientId: 998816284118-pob4qv58q5o866lo8524atghg5thdg4a.apps.googleusercontent.com
   clientSecret: nxr9HWh8l0rV-evLRgP1yFPz

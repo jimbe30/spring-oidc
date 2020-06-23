@@ -1,5 +1,8 @@
 
 ### infos IDP
+
+redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+
 keycloak:
   info: Serveur interne délégué à l'authentification des clients 
   realm: OIDC-demo

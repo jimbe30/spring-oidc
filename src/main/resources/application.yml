@@ -2,9 +2,7 @@
 #server:
 #    context-path: /oidcAuth
 
-### infos IDP
-redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
- 
+
 ---
 ### config vues jsp 
 
