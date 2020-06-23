@@ -1,32 +1,9 @@
 ### infos variables
-server:
-  port: 8090
+#server:
 #    context-path: /oidcAuth
 
 ### infos IDP
 redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-
-keycloak:
-  info: Serveur interne délégué à l'authentification des clients 
-  realm: OIDC-demo
-  baseUrl: http://localhost:8180/auth/realms/${keycloak.realm}/protocol/openid-connect
-  clientId: oidcDemoApp
-  clientSecret: f24fa57d-a8bc-4993-8a3d-afddbf3c6903
-  iconUrl: https://design.jboss.org/keycloak/logo/images/keycloak_icon_48px.png
-  
-azure:
-  info: Serveur cloud Microsoft Azure AD pour l'authentification des utilisateurs internes à l'organisation
-  baseURL: https://login.microsoftonline.com/7efe32b1-bb0f-4849-ae3a-68ee0d8fcf63
-  clientId: 72b6d379-5a3e-4e7d-9fc6-8c78b919fba8
-  clientSecret: ScLVdKORF9BpGIht._zn.x8-Mw0e.D2TT2
-  issuer: https://login.microsoftonline.com/7efe32b1-bb0f-4849-ae3a-68ee0d8fcf63/v2.0
-  iconUrl: https://icons-for-free.com/iconfiles/png/512/logo+microsoft+microsoft+logo+technology+windows+icon-1320167831167856453.png
-  
-google:
-  info: Fournisseur d'identité Google pour le test 
-  clientId: 656590843516-d87roc2opg8u7lpm2mqu71javnhmcqj6.apps.googleusercontent.com
-  clientSecret: W3Nw2SgqEX_kIHtGavbKpuYw
-  iconUrl: https://www.google.com/favicon.ico
  
 ---
 ### config vues jsp 
@@ -36,58 +13,3 @@ spring:
     view:
       prefix: /WEB-INF/jsp/
       suffix: .jsp
-      
----
-### fournisseurs OIDC
-
-# KEYCLOAK #
-spring:     
-  security:
-    oauth2:
-      client:
-        registration:        
-          keycloak:
-            client-name: ${keycloak.info}
-            authorization-grant-type: authorization_code
-            scope: profile, email, openid
-            client-id: ${keycloak.clientId}
-            client-secret: ${keycloak.clientSecret}
-            redirect-uri: ${redirect-uri}
-        provider:
-          keycloak:
-            authorization-uri: ${keycloak.baseUrl}/auth
-            token-uri: ${keycloak.baseUrl}/token
-            jwk-set-uri: ${keycloak.baseUrl}/certs
-            user-info-uri: ${keycloak.baseUrl}/userinfo
-            user-name-attribute: preferred_username
----
-# AZURE #
-spring:     
-  security:
-    oauth2:
-      client:
-        registration:        
-          azure:
-            client-name: ${azure.info}
-            authorization-grant-type: authorization_code
-            scope: profile, email, openid
-            client-id: ${azure.clientId}
-            client-secret: ${azure.clientSecret}
-            redirect-uri: ${redirect-uri}
-        provider:
-          azure:
-            authorization-uri: ${azure.baseURL}/oauth2/v2.0/authorize
-            token-uri: ${azure.baseURL}/oauth2/v2.0/token
-            jwk-set-uri: ${azure.baseURL}/discovery/v2.0/keys
----
-# GOOGLE #
-spring:     
-  security:
-    oauth2:
-      client:
-        registration:                
-          google:
-            client-name: ${google.info}
-            client-id: ${google.clientId}
-            client-secret: ${google.clientSecret}
-
