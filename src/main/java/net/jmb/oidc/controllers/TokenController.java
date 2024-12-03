@@ -5,11 +5,6 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Map;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,9 +21,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import net.jmb.oidc.security.WebSecurityConfig;
 import net.jmb.oidc.security.WebSecurityConfig.OidcHttpConfig.AuthorizationRequestResolverWithParameters;
-import springfox.documentation.annotations.ApiIgnore;
 
 @Controller
 @RequestMapping("/token")
@@ -41,7 +40,7 @@ public class TokenController {
 
 	@RequestMapping("/ok")
 	@ResponseBody
-	@ApiIgnore
+	@Hidden
 	public void tokenResult(
 			@AuthenticationPrincipal OidcUser principal, 
 			HttpServletRequest request, HttpServletResponse response

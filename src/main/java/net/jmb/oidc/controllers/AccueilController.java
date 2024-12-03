@@ -7,11 +7,6 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Map;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -29,9 +24,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTParser;
 
+import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import net.jmb.oidc.security.WebSecurityConfig;
 import net.jmb.oidc.security.WebSecurityConfig.OidcHttpConfig.AuthorizationRequestResolverWithParameters;
-import springfox.documentation.annotations.ApiIgnore;
+
 
 @Controller
 public class AccueilController {
@@ -44,8 +44,10 @@ public class AccueilController {
 	@GetMapping("/accueil")
 	@ResponseBody
 	public ResponseEntity<Object> accueil(
-			@ApiIgnore @AuthenticationPrincipal OidcUser principal,
-			@ApiIgnore HttpSession session, @ApiIgnore HttpServletRequest request, @ApiIgnore HttpServletResponse response,
+			@Parameter(hidden = true) @AuthenticationPrincipal OidcUser principal,
+			@Parameter(hidden = true) HttpSession session,
+			@Parameter(hidden = true) HttpServletRequest request,
+			@Parameter(hidden = true) HttpServletResponse response,
 			@RequestParam(value = "id_token", required = false) String idToken,
 			@RequestHeader(value = "Authorization", required = false) String bearerToken
 			

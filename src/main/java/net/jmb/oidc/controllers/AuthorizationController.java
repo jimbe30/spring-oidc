@@ -6,10 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -21,14 +17,16 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import net.jmb.oidc.model.IdentityProviderRegistration;
 import net.jmb.oidc.security.WebSecurityConfig;
-import springfox.documentation.annotations.ApiIgnore;
 
 @Controller
 @CrossOrigin
@@ -49,11 +47,11 @@ public class AuthorizationController {
 	}
 
 	@RequestMapping("/login")
-	@ApiIgnore()
+	@Hidden
 	public ModelAndView login(HttpServletRequest request,
 			@RequestParam(value = redirectParameter, required = false) String redirectTo) {
 
-		if (StringUtils.isEmpty(redirectTo)) {
+		if (!StringUtils.hasText(redirectTo)) {
 			redirectTo = request.getHeader("Referer");
 		}
 		Map<String, String> body = null;
@@ -65,7 +63,7 @@ public class AuthorizationController {
 	}
 	
 	// http://localhost:6969/login/keycloak?redirect_to=http://localhost:6969/accueil
-	@RequestMapping(path = "/login/{idp}", method = {RequestMethod.GET})
+	@GetMapping("/login/{idp}")
 	public void loginIdp(
 			HttpServletResponse response, 
 			HttpServletRequest request,	

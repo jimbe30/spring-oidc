@@ -8,7 +8,7 @@ keycloak:
   realm: OIDC-demo
   baseUrl: http://localhost:8180/auth/realms/${keycloak.realm}/protocol/openid-connect
   clientId: oidcDemoApp
-  clientSecret: f24fa57d-a8bc-4993-8a3d-afddbf3c6903
+  clientSecret: s1z49AfJNr4OEzebv15RRi6ZOo9d0f5Z
   iconUrl: https://design.jboss.org/keycloak/logo/images/keycloak_icon_48px.png
   
 azure:
