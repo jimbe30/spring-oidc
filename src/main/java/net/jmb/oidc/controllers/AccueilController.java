@@ -31,7 +31,6 @@ import com.nimbusds.jwt.JWTParser;
 
 import net.jmb.oidc.security.WebSecurityConfig;
 import net.jmb.oidc.security.WebSecurityConfig.OidcHttpConfig.AuthorizationRequestResolverWithParameters;
-import springfox.documentation.annotations.ApiIgnore;
 
 @Controller
 public class AccueilController {
@@ -44,8 +43,8 @@ public class AccueilController {
 	@GetMapping("/accueil")
 	@ResponseBody
 	public ResponseEntity<Object> accueil(
-			@ApiIgnore @AuthenticationPrincipal OidcUser principal,
-			@ApiIgnore HttpSession session, @ApiIgnore HttpServletRequest request, @ApiIgnore HttpServletResponse response,
+			@AuthenticationPrincipal OidcUser principal,
+			HttpSession session, HttpServletRequest request, HttpServletResponse response,
 			@RequestParam(value = "id_token", required = false) String idToken,
 			@RequestHeader(value = "Authorization", required = false) String bearerToken
 			

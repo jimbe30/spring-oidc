@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import net.jmb.oidc.security.WebSecurityConfig;
 import net.jmb.oidc.security.WebSecurityConfig.OidcHttpConfig.AuthorizationRequestResolverWithParameters;
-import springfox.documentation.annotations.ApiIgnore;
 
 @Controller
 @RequestMapping("/token")
@@ -41,7 +40,6 @@ public class TokenController {
 
 	@RequestMapping("/ok")
 	@ResponseBody
-	@ApiIgnore
 	public void tokenResult(
 			@AuthenticationPrincipal OidcUser principal, 
 			HttpServletRequest request, HttpServletResponse response
@@ -77,10 +75,11 @@ public class TokenController {
 				queryParams.append(queryParams.length() > 0 ? "&" : "?").append("token_type=Bearer")
 						.append("&id_token=" + token);
 
-				if (tmpTargetUrl.length() > 0) {
-					String targetUrl = tmpTargetUrl.append(queryParams).toString();
-					response.sendRedirect(targetUrl);
+				if (tmpTargetUrl.length() == 0) {
+					tmpTargetUrl.append("/accueil");
 				}
+				String targetUrl = tmpTargetUrl.append(queryParams).toString();
+				response.sendRedirect(targetUrl);
 			}
 
 		} catch (Exception e) {

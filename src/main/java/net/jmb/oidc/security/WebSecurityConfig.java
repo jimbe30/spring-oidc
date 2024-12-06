@@ -46,11 +46,9 @@ import com.nimbusds.jose.util.ArrayUtils;
 import com.nimbusds.jwt.JWTParser;
 
 import net.jmb.oidc.model.IdentityProviderRegistration;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @EnableWebSecurity
 @Configuration
-@EnableSwagger2
 public class WebSecurityConfig {
 	
 	public static final String AUTHORIZATION_BASE_URI = OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI + "/";
@@ -65,11 +63,37 @@ public class WebSecurityConfig {
 	@Value("${server.servlet.context-path:}")
 	String contextPath;
 	
-	@Autowired
-	private ClientRegistrationRepository clientRegistrationRepository;
+//	@Autowired
+//	private ClientRegistrationRepository clientRegistrationRepository;
+	
+//	@Bean
+//	ClientRegistrationRepository clientRegistrationRepository() {
+//		
+//		ClientRegistrationRepository clientRegistrationRepository = null;
+//		@SuppressWarnings("serial")
+//		final HashMap<String, List<String>> idpConfigs = new HashMap<String, List<String>>() {{
+//			put("google", Arrays.asList("https://accounts.google.com", "656590843516-d87roc2opg8u7lpm2mqu71javnhmcqj6.apps.googleusercontent.com", "W3Nw2SgqEX_kIHtGavbKpuYw"));
+//			put("keycloak", Arrays.asList("http://localhost:8180/realms/OIDC-demo", "keycloak-oidc-demo-app", "DNi9rc9JB41DFJ9TS3rF93pfp1pLiQ4r"));
+//		}};
+//		
+//		final List<ClientRegistration> registrations = new ArrayList<ClientRegistration>();
+//		idpConfigs.forEach( (idp, conf) -> {
+//			ClientRegistration clientRegistration = ClientRegistrations.fromIssuerLocation(conf.get(0))
+//					.registrationId(idp)
+//					.clientId(conf.get(1))
+//					.clientSecret(conf.get(2))
+//					.build();
+//			registrations.add(clientRegistration);
+//		});
+//		
+//		
+//		clientRegistrationRepository = new InMemoryClientRegistrationRepository(registrations);
+//		
+//		return clientRegistrationRepository;
+//	}
 	
 	@Bean
-	public Map<String, IdentityProviderRegistration> idpRegistrations (Environment env) {
+	Map<String, IdentityProviderRegistration> idpRegistrations (Environment env, ClientRegistrationRepository clientRegistrationRepository) {
 		
 		Map<String, IdentityProviderRegistration> result = new HashMap<>();
 		
@@ -122,24 +146,21 @@ public class WebSecurityConfig {
 		
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
-			http
-				.requestMatcher(
-						request -> request.getHeader("Authorization") != null && request.getHeader("Authorization").startsWith("Bearer "))
-				.sessionManagement()
-					.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-					.and()
-				.authorizeRequests()
-					.antMatchers(PERMIT_ALL_REQUEST_MATCHER).permitAll()
-					.anyRequest().authenticated()
-					.and()
-				.oauth2ResourceServer()
-					// ici on injecte implicitement le JwtDecoder défini ci-dessous
-					.jwt().and()
-					.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/error_401") )
-					.and()				
-				.logout()
-					.logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
-					.logoutSuccessUrl("/login?success").permitAll();
+            http
+                .requestMatcher(
+                        request -> request.getHeader("Authorization") != null && request.getHeader("Authorization").startsWith("Bearer "))
+                .sessionManagement(management -> management
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeRequests(requests -> requests
+                        .antMatchers(PERMIT_ALL_REQUEST_MATCHER).permitAll()
+                        .anyRequest().authenticated())
+                .oauth2ResourceServer(server -> server
+                        // ici on injecte implicitement le JwtDecoder défini ci-dessous
+                        .jwt().and()
+                        .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/error_401")))
+                .logout(logout -> logout
+                        .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
+                        .logoutSuccessUrl("/login?success").permitAll());
 		}
 		
 		/**
@@ -209,35 +230,35 @@ public class WebSecurityConfig {
 	public class OidcHttpConfig extends WebSecurityConfigurerAdapter {
 		
 		private String[] permitAllRequestMatcher = ArrayUtils.concat(
-				PERMIT_ALL_REQUEST_MATCHER,	
-				new String[] { "/accueil" }
-			);
+			PERMIT_ALL_REQUEST_MATCHER,	
+			new String[] { "/accueil" }
+		);
+		
+		@Autowired
+		private ClientRegistrationRepository clientRegistrationRepository;
 		
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
-			http
-				.authorizeRequests()					
-					.antMatchers(permitAllRequestMatcher).permitAll()
-					.anyRequest().authenticated()
-					.and()
-				.sessionManagement()
-					.sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy())
-					.and()
-				.oauth2Login()
-					.authorizationEndpoint()
-						.authorizationRequestResolver(
-							new AuthorizationRequestResolverWithParameters(clientRegistrationRepository))
-						.and()
-					.loginPage("/error_401")
-					.defaultSuccessUrl("/token/ok")
-				//	.successHandler(this.successHandler(TARGET_URL_PARAM, "/accueil"))
-					.userInfoEndpoint()
-						.oidcUserService(this.oidcUserService())
-						.and()
-					.and()
-				.logout()
-					.logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
-					.logoutSuccessUrl("/login").permitAll();
+            http
+                .authorizeRequests(requests -> requests
+                        .antMatchers(permitAllRequestMatcher).permitAll()
+                        .anyRequest().authenticated())
+                .sessionManagement(management -> management
+                        .sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy()))
+                .oauth2Login(login -> login
+                        .authorizationEndpoint()
+                        .authorizationRequestResolver(
+                                new AuthorizationRequestResolverWithParameters(clientRegistrationRepository))
+                        .and()
+                        .loginPage("/error_401")
+                        .defaultSuccessUrl("/token/ok")
+                        //	.successHandler(this.successHandler(TARGET_URL_PARAM, "/accueil"))
+                        .userInfoEndpoint()
+                        .oidcUserService(this.oidcUserService())
+                        .and())
+                .logout(logout -> logout
+                        .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
+                        .logoutSuccessUrl("/login").permitAll());
 		}
 		/**
 		 * Utilise <code>DefaultOAuth2AuthorizationRequestResolver</code> pour construire la requête

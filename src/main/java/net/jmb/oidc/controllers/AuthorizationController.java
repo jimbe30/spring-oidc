@@ -28,7 +28,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import net.jmb.oidc.model.IdentityProviderRegistration;
 import net.jmb.oidc.security.WebSecurityConfig;
-import springfox.documentation.annotations.ApiIgnore;
 
 @Controller
 @CrossOrigin
@@ -49,7 +48,6 @@ public class AuthorizationController {
 	}
 
 	@RequestMapping("/login")
-	@ApiIgnore()
 	public ModelAndView login(HttpServletRequest request,
 			@RequestParam(value = redirectParameter, required = false) String redirectTo) {
 
@@ -64,7 +62,7 @@ public class AuthorizationController {
 		return new ModelAndView("loginPage", body);
 	}
 	
-	// http://localhost:6969/login/keycloak?redirect_to=http://localhost:6969/accueil
+	// http://localhost:8090/login/keycloak?redirect_to=http://localhost:8090/accueil
 	@RequestMapping(path = "/login/{idp}", method = {RequestMethod.GET})
 	public void loginIdp(
 			HttpServletResponse response, 

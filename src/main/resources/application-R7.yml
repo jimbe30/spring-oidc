@@ -6,9 +6,9 @@ redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
 keycloak:
   info: Serveur interne délégué à l'authentification des clients 
   realm: OIDC-demo
-  baseUrl: http://localhost:8180/auth/realms/${keycloak.realm}/protocol/openid-connect
-  clientId: oidcDemoApp
-  clientSecret: f24fa57d-a8bc-4993-8a3d-afddbf3c6903
+  baseUrl: http://localhost:8180/realms/${keycloak.realm}/protocol/openid-connect
+  clientId: keycloak-oidc-demo-app
+  clientSecret: DNi9rc9JB41DFJ9TS3rF93pfp1pLiQ4r
   iconUrl: https://design.jboss.org/keycloak/logo/images/keycloak_icon_48px.png
   
 azure:
