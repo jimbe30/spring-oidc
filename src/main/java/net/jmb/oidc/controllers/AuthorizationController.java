@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
@@ -51,7 +50,7 @@ public class AuthorizationController {
 	public ModelAndView login(HttpServletRequest request,
 			@RequestParam(value = redirectParameter, required = false) String redirectTo) {
 
-		if (StringUtils.isEmpty(redirectTo)) {
+		if (!StringUtils.hasText(redirectTo)) {
 			redirectTo = request.getHeader("Referer");
 		}
 		Map<String, String> body = null;
@@ -63,7 +62,7 @@ public class AuthorizationController {
 	}
 	
 	// http://localhost:8090/login/keycloak?redirect_to=http://localhost:8090/accueil
-	@RequestMapping(path = "/login/{idp}", method = {RequestMethod.GET})
+	@GetMapping(path = "/login/{idp}")
 	public void loginIdp(
 			HttpServletResponse response, 
 			HttpServletRequest request,	

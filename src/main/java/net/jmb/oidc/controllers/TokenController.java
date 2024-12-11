@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import net.jmb.oidc.security.WebSecurityConfig;
-import net.jmb.oidc.security.WebSecurityConfig.OidcHttpConfig.AuthorizationRequestResolverWithParameters;
+import net.jmb.oidc.security.WebSecurityConfig.AuthorizationRequestResolver;
 
 @Controller
 @RequestMapping("/token")
@@ -55,7 +55,7 @@ public class TokenController {
 		StringBuffer queryParams = new StringBuffer();
 		@SuppressWarnings("unchecked")
 		Map<String, String[]> parameters = (Map<String, String[]>) session
-				.getAttribute(AuthorizationRequestResolverWithParameters.SAVED_PARAMETERS_ATTR_NAME);
+				.getAttribute(AuthorizationRequestResolver.SAVED_PARAMETERS_ATTR_NAME);
 		
 		try {
 			if (parameters != null) {

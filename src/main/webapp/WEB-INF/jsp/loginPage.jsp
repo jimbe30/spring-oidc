@@ -26,6 +26,9 @@
 			<tr>
 				<td><a href="/oauth2/authorization/keycloak?${redirect_to}">Keycloak</a></td>
 			</tr>
+			<tr>
+				<td><a href="/oauth2/authorization/ige-applications?${redirect_to}">ige-applications</a></td>
+			</tr>
 		</table>
 
 	</div>

@@ -11,6 +11,14 @@ keycloak:
   clientSecret: DNi9rc9JB41DFJ9TS3rF93pfp1pLiQ4r
   iconUrl: https://design.jboss.org/keycloak/logo/images/keycloak_icon_48px.png
   
+isante:
+  info: Serveur keycloak iSante 
+  realm: cegedimactiv.tierspayant
+  baseUrl: https://auth-isdrk1.priv.services-fm.net/auth/realms/${isante.realm}/protocol/openid-connect
+  clientId: tierspayant
+  clientSecret: mLeVYvuDIVLSFr6EvTsfrVSbSe
+  iconUrl: https://design.jboss.org/keycloak/logo/images/keycloak_icon_48px.png
+  
 azure:
   info: Serveur cloud Microsoft Azure AD pour l'authentification des utilisateurs internes à l'organisation
   baseURL: https://login.microsoftonline.com/7efe32b1-bb0f-4849-ae3a-68ee0d8fcf63
@@ -47,6 +55,27 @@ spring:
             token-uri: ${keycloak.baseUrl}/token
             jwk-set-uri: ${keycloak.baseUrl}/certs
             user-info-uri: ${keycloak.baseUrl}/userinfo
+            user-name-attribute: preferred_username
+---
+# ISANTE #
+spring:     
+  security:
+    oauth2:
+      client:
+        registration:        
+          isante:
+            client-name: ${isante.info}
+            authorization-grant-type: authorization_code
+            scope: profile, email, openid
+            client-id: ${isante.clientId}
+            client-secret: ${isante.clientSecret}
+            redirect-uri: ${redirect-uri}
+        provider:
+          isante:
+            authorization-uri: ${isante.baseUrl}/auth
+            token-uri: ${isante.baseUrl}/token
+            jwk-set-uri: ${isante.baseUrl}/certs
+            user-info-uri: ${isante.baseUrl}/userinfo
             user-name-attribute: preferred_username
 ---
 # AZURE #
